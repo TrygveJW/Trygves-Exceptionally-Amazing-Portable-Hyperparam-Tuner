@@ -1,1 +1,1 @@
-# Trygves-Exceptional-Amazing-Portable-Hyperparam-Tuner
+# Trygves-Exceptional-Amazing-Portable-Hyperparam-Tuner (TEA-POT)
