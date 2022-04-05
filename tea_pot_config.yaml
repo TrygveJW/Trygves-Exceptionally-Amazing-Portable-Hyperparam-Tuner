@@ -1,0 +1,72 @@
+#
+#study_name: "study_1"
+#
+#engine_params:
+#  base_command: "echo "
+#  n_trials: 100
+#  timeout: 1000
+#  # example with: score: 34.9 accuracy: 11 iter: 23
+#  direction: "maximize"
+#  result_regex: 'score: (\S*)'
+#  pruning:
+#    score_regex: 'score: (\S*)'
+#    iter_regex: 'iter: (\S*)'
+#    use_time: false
+#
+#
+#search_space:
+#  - pick_int:
+#      name: "num_layers"
+#      call_param: "--num_layers "
+#      from: 2
+#      to: 4
+#      step: 1
+#
+#
+#  - pick_float:
+#      name: "lr"
+#      call_param: "--lr "
+#      from: 2.3
+#      to: 4.6
+#      log: false
+#
+#  - pick_categorical:
+#      name: "opt"
+#      call_param: "--opt "
+#      picks: ["adam", "rsm_prop"]
+
+study_name: "study_1"
+
+engine_params:
+  base_command: "./.py_env/bin/python3 ./test_tr.py "
+  print_level: 0
+#  n_trials: 100
+  timeout: 20
+  # example with: score: 34.9 accuracy: 11 iter: 23
+  direction: "maximize"
+  result_regex: 'score: (\S*)'
+  pruning:
+    score_regex: 'score: (\S*)'
+    iter_regex: 'iter: (\S*)'
+    use_time: false
+
+
+
+search_space:
+  - pick_float:
+      name: "alpha"
+      call_param: "--alpha "
+      from: 0
+      to: 1
+
+
+  - pick_float:
+      name: "bn"
+      call_param: "--bn "
+      from: 0
+      to: 1
+
+  - pick_categorical:
+      name: "fp"
+      call_param: "--fp "
+      picks: ["True", "False"]
