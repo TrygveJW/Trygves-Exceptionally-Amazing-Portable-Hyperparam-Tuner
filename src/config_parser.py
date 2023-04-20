@@ -1,4 +1,5 @@
 import argparse
+import os.path
 import re
 import sys
 from abc import abstractmethod
@@ -184,7 +185,7 @@ class _PickInt(_OptPick):
         self.call_param: str = ""
         self.from_val: int = 0
         self.to_val: int = 0
-        self.step: Optional[int] = None
+        self.step: Optional[int] = 1
         self.use_log: bool = False
 
         self._valid_keys = ["name", "call_param", "from", "to", "step", "log"]
@@ -418,6 +419,12 @@ class OptunaConfig:
         # fetch the args
         args = sys.argv
         parser_args = args
+
+        if len(parser_args) > 0 and os.path.exists(parser_args[0]):
+            parser_args.pop(0)
+
+        if len(parser_args) == 0:
+            return
 
         if "--cmd" in args:
             cm_idx = args.index("--cmd")

@@ -1,5 +1,6 @@
 import argparse
 import codecs
+import datetime
 import os
 import random
 import re
@@ -16,12 +17,7 @@ import optuna
 from config_parser import *
 from config_parser import _OptPick
 
-with open(r'./config_example.yaml', "r") as file:
 
-    parsed = yaml.load(file, Loader=yaml.FullLoader)
-    # sort_file = yaml.dump(abc, sort_keys=True)
-
-fp = './config_example.yaml'
 # cnfg = OptunaConfig.parse_from_config_file(fp)
 
 # print(parsed)
@@ -29,7 +25,7 @@ fp = './config_example.yaml'
 
 
 def _regex_line_for_first_group(regex: re.Pattern, line: str):
-    match = regex.match(line)
+    match = regex.search(line)
     if match is not None:
         value = match.group(1)
         return value
@@ -39,11 +35,19 @@ def _regex_line_for_first_group(regex: re.Pattern, line: str):
 class TeaPot:
     def __init__(self, fp: str):
         dir_content = os.listdir("./")
-        default_path = "./tea_pot_config.yml"
+        default_path = "./tea_pot_config.yaml"
+
+        self.checkpoint_dir = "./tea_pot_checkpoints"
+        self.checkpoint_file_name = f"tea_pot_study_{datetime.datetime.now()}.csv"
+
+        if not os.path.isdir(self.checkpoint_dir):
+            os.mkdir(self.checkpoint_dir)
+
+
         if os.path.exists(default_path):
             self.config: OptunaConfig = OptunaConfig.parse_from_config_file(default_path)
-
-        self.config: OptunaConfig = OptunaConfig.parse_from_command_line()
+        else:
+            self.config: OptunaConfig = OptunaConfig.parse_from_command_line()
 
         self.result_score_regex = re.compile(self.config.engine_params.result_regex)
 
@@ -79,6 +83,7 @@ class TeaPot:
         final_score = None
         for raw_line in process.stdout:
             # print(raw_line)
+
             line = codecs.decode(raw_line, 'unicode_escape')
             code = process.poll()
             if self.config.engine_params.print_level == 2:
@@ -86,7 +91,9 @@ class TeaPot:
 
             # check if result is found
             val = _regex_line_for_first_group(self.result_score_regex, line)
+            # print(f"regex pat {self.result_score_regex} ret: {val}")
             final_score = float(val) if val is not None else final_score
+            # print(f"final_s: {final_score}")
 
             # check if run is over
             # print(codecs.decode(line, 'unicode_escape'), end="")
@@ -98,6 +105,7 @@ class TeaPot:
                     pass
                 else:
                     print("non zero exit code")
+                    print(line)
                     exit()
                     break
                     pass
@@ -132,7 +140,7 @@ class TeaPot:
 
     def trial_callback(self,study: optuna.study.Study, frozen_trial: optuna.trial.FrozenTrial):
         df: pd.DataFrame = study.trials_dataframe()
-        df.to_csv("test.csv")
+        df.to_csv(f"{self.checkpoint_dir}/{self.checkpoint_file_name}")
 
 
 
@@ -147,8 +155,22 @@ class TeaPot:
     # print(process.stdout.decode("utf-8"))
 
 
-tp = TeaPot(fp)
-tp.run_study()
+
+def main():
+    # with open(r'./config_example.yaml', "r") as file:
+    #     parsed = yaml.load(file, Loader=yaml.FullLoader)
+    #     # sort_file = yaml.dump(abc, sort_keys=True)
+
+    # fp = './config_example.yaml'
+
+    tp = TeaPot(None)
+    tp.run_study()
+
+
+
+if __name__ == '__main__':
+    main()
+
 
 
 #./.py_env/bin/python3 ./test_tr.py   --alpha 0.8167021281665366   --bn 0.012461435663013387   --fp False
